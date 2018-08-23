@@ -9,7 +9,7 @@ class DBHelper {
    */
 	static get DATABASE_URL() {
 		const port = 1337; // Change this to your server port
-		return `http://localhost:${port}/restaurants`;
+		return `http://localhost:${port}`;
 	}
 
 	/**
@@ -17,7 +17,7 @@ class DBHelper {
    */
   static fetchRestaurants(callback) {
     let xhr = new XMLHttpRequest();
-    xhr.open('GET', DBHelper.DATABASE_URL);
+    xhr.open('GET', `${DBHelper.DATABASE_URL}/restaurants`);
     xhr.onload = () => {
       if (xhr.status === 200) { // Got a success response from server!
         const json = JSON.parse(xhr.responseText);
@@ -139,10 +139,12 @@ class DBHelper {
     });
   }
 
+  static fetchReviewByRestaurantId(id, callback) {
+    return fetch(`${this.DATABASE_URL}/reviews/?restaurant_id=${id}`, {method: 'GET'}).then(response => response.json()).then(data => {callback(data)});
+  }
+
   static toggleFavorite(id, favorite, callback) {
-    return fetch(`${this.DATABASE_URL}/${id}/?is_favorite=${favorite}`, {method: 'PUT'}).then((response) => {
-      callback(response.json);
-    });
+    return fetch(`${this.DATABASE_URL}/restaurants/${id}/?is_favorite=${favorite}`, {method: 'PUT'}).then(response => response.json()).then(data => {callback(data)});
   }
 
   static updateFavorite(button, restaurant) {
