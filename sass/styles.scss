@@ -245,12 +245,27 @@ section, aside {
 }
 
 #restaurant-container {
+  .detail-first-line {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
   h1 {
     font-size: 1rem;
     letter-spacing: 1px;
     color: #131516;
     margin-left: 1rem;
     margin-right: 1rem;
+  }
+    button {
+    width: 20%;
+    margin: 0.83rem 1rem;
+    border: none;
+    background-position: right 0;
+    background-size: contain;
+    background-repeat: no-repeat;
   }
   #restaurant-cuisine {
     font-size: 0.7rem;

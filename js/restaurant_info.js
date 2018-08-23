@@ -58,6 +58,25 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
 	const name = document.getElementById('restaurant-name');
 	name.innerHTML = restaurant.name;
 
+	restaurant.is_favorite = ((restaurant.is_favorite == "true") || restaurant.is_favorite == true);
+	
+	const favoriteButton = document.getElementById('favorite-button');
+	favoriteButton.style.backgroundColor = 'transparent';
+	if(restaurant.is_favorite) {
+		favoriteButton.setAttribute('aria-label', `Remove ${restaurant.name} from favorites`);
+		favoriteButton.style.backgroundImage = `url(${DBHelper.favoriteSVG()})`;
+	}
+	else {
+		favoriteButton.setAttribute('aria-label', `Add ${restaurant.name} to favorites`);
+		favoriteButton.style.backgroundImage = `url(${DBHelper.notFavoriteSVG()})`;
+	}
+	favoriteButton.onclick = () => {
+		restaurant.is_favorite = !restaurant.is_favorite;
+		DBHelper.toggleFavorite(restaurant.id, restaurant.is_favorite, (data) => {
+			DBHelper.updateFavorite(favoriteButton, restaurant);
+		});
+	}
+
 	const address = document.getElementById('restaurant-address');
 	address.innerHTML = restaurant.address;
 
@@ -128,9 +147,9 @@ createReviewHTML = (review) => {
 	name.innerHTML = review.name;
 	li.appendChild(name);
 
-	const date = document.createElement('p');
-	date.innerHTML = review.date;
-	li.appendChild(date);
+	// const date = document.createElement('p');
+	// date.innerHTML = review.date;
+	// li.appendChild(date);
 
 	const rating = document.createElement('p');
 	rating.innerHTML = `Rating: ${review.rating}`;

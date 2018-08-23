@@ -172,6 +172,7 @@ createRestaurantHTML = (restaurant) => {
 
 	const favoriteButton = document.createElement('button');
 	favoriteButton.className = 'favorite-button';
+	favoriteButton.style.backgroundColor = 'transparent';
 	if(restaurant.is_favorite) {
 		favoriteButton.setAttribute('aria-label', `Remove ${restaurant.name} from favorites`);
 		favoriteButton.style.backgroundImage = `url(${DBHelper.favoriteSVG()})`;
