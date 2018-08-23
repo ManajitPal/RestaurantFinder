@@ -139,6 +139,22 @@ class DBHelper {
     });
   }
 
+  static toggleFavorite(id, favorite, callback) {
+    return fetch(`${this.DATABASE_URL}/${id}/?is_favorite=${favorite}`, {method: 'PUT'}).then((response) => {
+      callback(response.json);
+    });
+  }
+
+  static updateFavorite(button, restaurant) {
+    if(restaurant.is_favorite) {
+      button.setAttribute('aria-label', `Remove ${restaurant.name} from favorites`);
+      button.style.backgroundImage = `url(${DBHelper.favoriteSVG()})`;
+    }
+    else {
+      button.setAttribute('aria-label', `Add ${restaurant.name} to favorites`);
+      button.style.backgroundImage = `url(${DBHelper.notFavoriteSVG()})`;
+    }
+  }
   /**
    * Restaurant page URL.
    */
@@ -150,7 +166,13 @@ class DBHelper {
    * Restaurant image URL.
    */
   static imageUrlForRestaurant(restaurant) {
-    return (`/img/${restaurant.photograph}`);
+    return (`/img/${restaurant.photograph}.jpg`);
+  }
+  static notFavoriteSVG() {
+    return (`/icons/like-outline.svg`);
+  }
+  static favoriteSVG() {
+    return (`/icons/like-fill.svg`);
   }
 
   /**

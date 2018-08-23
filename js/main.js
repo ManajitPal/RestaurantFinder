@@ -150,7 +150,7 @@ createRestaurantHTML = (restaurant) => {
 	const image = document.createElement('img');
 	image.className = 'restaurant-img';
 	image.alt = 'Image for ' + restaurant.name;
-	image.src = `${DBHelper.imageUrlForRestaurant(restaurant)}.jpg`;
+	image.src = `${DBHelper.imageUrlForRestaurant(restaurant)}`;
 	li.append(image);
 
 	const name = document.createElement('h1');
@@ -165,11 +165,36 @@ createRestaurantHTML = (restaurant) => {
 	address.innerHTML = restaurant.address;
 	li.append(address);
 
+	const lastLineContainer = document.createElement('div');
+	lastLineContainer.className = 'restaurant-last-line';
+
+	restaurant.is_favorite = ((restaurant.is_favorite == "true") || restaurant.is_favorite == true);
+
+	const favoriteButton = document.createElement('button');
+	favoriteButton.className = 'favorite-button';
+	if(restaurant.is_favorite) {
+		favoriteButton.setAttribute('aria-label', `Remove ${restaurant.name} from favorites`);
+		favoriteButton.style.backgroundImage = `url(${DBHelper.favoriteSVG()})`;
+	}
+	else {
+		favoriteButton.setAttribute('aria-label', `Add ${restaurant.name} to favorites`);
+		favoriteButton.style.backgroundImage = `url(${DBHelper.notFavoriteSVG()})`;
+	}
+	favoriteButton.onclick = () => {
+		restaurant.is_favorite = !restaurant.is_favorite;
+		DBHelper.toggleFavorite(restaurant.id, restaurant.is_favorite, (data) => {
+			DBHelper.updateFavorite(favoriteButton, restaurant);
+		});
+	}
+	lastLineContainer.append(favoriteButton);
+
 	const more = document.createElement('a');
 	more.innerHTML = 'View Details';
 	more.setAttribute('aria-label', 'View Details for ' + restaurant.name);
 	more.href = DBHelper.urlForRestaurant(restaurant);
-	li.append(more);
+	lastLineContainer.append(more);
+
+	li.append(lastLineContainer);
 
 	return li;
 };
@@ -177,18 +202,6 @@ createRestaurantHTML = (restaurant) => {
 /**
  * Add markers for current restaurants to the map.
  */
-addMarkersToMap = (restaurants = self.restaurants) => {
-	restaurants.forEach(restaurant => {
-		// Add marker to the map
-		const marker = DBHelper.mapMarkerForRestaurant(restaurant, self.newMap);
-		marker.on('click', onClick);
-		function onClick() {
-			window.location.href = marker.options.url;
-		}
-		self.markers.push(marker);
-	});
-
-}; 
 addMarkersToMap = (restaurants = self.restaurants) => {
 	restaurants.forEach(restaurant => {
 		// Add marker to the map

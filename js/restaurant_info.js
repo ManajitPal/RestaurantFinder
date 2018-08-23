@@ -7,6 +7,7 @@ var newMap;
 
 window.initMap = () => {
 	fetchRestaurantFromURL((error, restaurant) => {
+		let loc = restaurant.latlng;
 		if (error) { // Got an error!
 			console.error(error);
 		} else {
@@ -63,7 +64,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
 	const image = document.getElementById('restaurant-img');
 	image.className = 'restaurant-img';
 	image.alt = 'Image for ' + restaurant.name;
-	image.src = `${DBHelper.imageUrlForRestaurant(restaurant)}.jpg`;
+	image.src = `${DBHelper.imageUrlForRestaurant(restaurant)}`;
 
 	const cuisine = document.getElementById('restaurant-cuisine');
 	cuisine.innerHTML = restaurant.cuisine_type;
