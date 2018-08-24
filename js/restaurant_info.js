@@ -190,3 +190,76 @@ getParameterByName = (name, url) => {
 		return '';
 	return decodeURIComponent(results[2].replace(/\+/g, ' '));
 };
+
+/**
+ * Form.
+ */
+sendForm = () => {
+	event.preventDefault();
+	const review = validateForm();
+	if(review) {
+		sendReview(review);
+	}
+}
+
+validateForm = () => {
+	const name = document.getElementById('name');
+	if(name.value === "") {
+		showAlert('Please enter your name');
+		name.setAttribute('aria-invalid', true);
+		name.focus();
+		return;
+	} else {
+		name.setAttribute('aria-invalid', false);
+	}
+
+	const e = document.getElementById('rating');
+	const rating = e.options[e.selectedIndex].value;
+	const comment = document.getElementById('comments');
+	if(comment.value === "") {
+		showAlert('Please enter your review');
+		comment.setAttribute('aria-invalid', true);
+		comment.focus();
+		return;
+	} else {
+		comment.setAttribute('aria-invalid', false);
+	}
+
+	const reviewData = {
+		'restaurant_id': restaurant.id,
+		'name': name.value,
+		'rating': rating,
+		'comments': comment.value
+	}
+
+	return reviewData;
+
+}
+
+sendReview = (review) => {
+	DBHelper.postReview(review, (response) => {
+		location.reload();
+		showAlert('Review Added Successfully!');
+	});
+}
+
+/*
+ * show alert message
+ */
+function showAlert(msg){
+    const alertBox = document.getElementById('alert');
+    alertBox.getElementsByClassName('msg')[0].innerText = msg;
+    alertBox.style.display = "inline-block";
+    setTimeout(() => { closeAlert(); }, 5000);
+}
+
+
+/*
+ * close alert message; 
+ */
+function closeAlert(){
+    const alertBox = document.getElementById('alert');
+    alertBox.getElementsByClassName('msg')[0].innerText = "";
+    alertBox.style.display = "none";
+}
+

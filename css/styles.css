@@ -368,6 +368,42 @@ table td {
       color: #373d3f;
       line-height: 1.5rem; }
 
+/* =============== Alert Box  ============= */
+#alert {
+  position: fixed;
+  background-color: rgba(0, 0, 0, 0.75);
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999;
+  display: none;
+  -webkit-transition: all 0.3s;
+  transition: all 0.3s; }
+  #alert span {
+    width: 280px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    text-align: center;
+    font-size: 1rem;
+    color: #373d3f;
+    border-radius: 5px;
+    -webkit-box-shadow: 0px 0px 10px 0px rgba(33, 33, 33, 0.2);
+            box-shadow: 0px 0px 10px 0px rgba(33, 33, 33, 0.2);
+    -webkit-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+    padding: 2em;
+    background: #ffffff; }
+  #alert button {
+    text-align: right;
+    color: #ffffff;
+    background: transparent;
+    border: none;
+    width: 100%;
+    padding: 0 1rem;
+    font-size: 2.5rem; }
+
 /* =============== Form Styles ============ */
 form {
   display: -webkit-box;

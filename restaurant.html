@@ -54,28 +54,29 @@
       <!-- End restaurant -->
     </main>
     <!-- End main -->
-
+    <div id="alert" role="alert"><span class="msg"></span><button type="button" aria-hidden="true" class="close" onclick="closeAlert()">×</button></div>
     <!-- Beginning reviews -->
     <section role="list" id="reviews-container">
-        <form>
-            <h2>Post Your Review</h2>
-            <label for="name">Name: </label>
-            <input type="text" id="name" placeholder="e.g.: John Doe"/>
-      
-            <label id="select-label" for="rating" tabindex="-1">Rate the restaurant: </label>
-            <select id="rating" aria-labelledby="select-label">
-              <option value="5">5</option>
-              <option value="4">4</option>
-              <option value="3">3</option>
-              <option value="2">2</option>
-              <option value="1">1</option>
-            </select>
-      
-            <label id="comment-label" for="comments">Comments: </label>
-            <textarea id="comments" placeholder="e.g.: Loved the food and ambience"></textarea>
-      
-            <button type="submit">Submit Review</button>
-          </form>
+      <form onsubmit="sendForm();">
+        <h2>Post Your Review</h2>
+        <label for="name">Name: </label>
+        <input type="text" id="name" placeholder="e.g.: John Doe"/>
+  
+        <label id="select-label" for="rating" tabindex="-1">Rate the restaurant: </label>
+        <select id="rating" aria-labelledby="select-label">
+          <option value="5">5</option>
+          <option value="4">4</option>
+          <option value="3">3</option>
+          <option value="2">2</option>
+          <option value="1">1</option>
+        </select>
+  
+        <label id="comment-label" for="comments">Comments: </label>
+        <textarea id="comments" placeholder="e.g.: Loved the food and ambience"></textarea>
+  
+        <button type="submit" id="submitBtn">Submit Review</button>
+      </form>
+
       <ul id="reviews-list"></ul>
     </section>
 

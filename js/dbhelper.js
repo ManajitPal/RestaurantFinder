@@ -143,6 +143,10 @@ class DBHelper {
     return fetch(`${this.DATABASE_URL}/reviews/?restaurant_id=${id}`, {method: 'GET'}).then(response => response.json()).then(data => {callback(data)});
   }
 
+  static postReview(review, callback) {
+    return fetch(`${this.DATABASE_URL}/reviews/`, {method: 'POST', body: JSON.stringify(review)}).then(response=> response.json()).then(data => {callback(data)});
+  }
+
   static toggleFavorite(id, favorite, callback) {
     return fetch(`${this.DATABASE_URL}/restaurants/${id}/?is_favorite=${favorite}`, {method: 'PUT'}).then(response => response.json()).then(data => {callback(data)});
   }
