@@ -8,9 +8,15 @@
     <meta name="theme-color" content="#3367fe"/>
     <!-- <link rel="manifest" href="manifest.json"> -->
     <!-- Normalize.css for better cross-browser consistency -->
-    <link rel="stylesheet" src="//normalize-css.googlecode.com/svn/trunk/normalize.css" />
+    <link rel="preconnect" src="//normalize-css.googlecode.com/svn/trunk/normalize.css" crossorigin />
     <!-- Main CSS file -->
-    <link rel="stylesheet" href="css/styles.css">
+    <script type="text/javascript">
+      var stylesheet = document.createElement('link');
+      stylesheet.href = 'dist/css/styles.css';
+      stylesheet.rel = 'stylesheet';
+      stylesheet.type = 'text/css';
+      document.getElementsByTagName('head')[0].appendChild(stylesheet);
+</script>
     <title>Restaurant Reviews</title>
   </head>
 
@@ -29,7 +35,10 @@
     <main id="maincontent">
       <!-- Beginning map -->
       <aside id="map-container">
-        <div id="map" aria-label="map" role="application"></div>
+
+        <img id="static_map" onclick="swap_map()" alt="map"></img> 
+
+        <div id="map" aria-label="map" role="application" style="display: none"></div>
       </aside>
       <!-- End map -->
       <!-- Beginning restaurant listings -->
@@ -60,13 +69,14 @@
     <!-- End Footer -->
     <!-- Beginning scripts -->
     <!-- Database helpers -->
-    <script charset="utf-8" src="js/dbhelper.js"></script>
+    <script charset="utf-8" src="dist/js/dbhelper-min.js" ></script>
     <!-- Main javascript file -->
-    <script charset="utf-8" src="js/main.js"></script>
+    <script charset="utf-8" src="dist/js/main-min.js" ></script>
     <!-- Google Maps -->
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBQo48L3GGaSG6akyytb2Ggd_R53fu91XM&libraries=places&callback=initMap"></script>
     <!-- End scripts -->
 
   </body>
-
+  
 </html>
+<noscript><link rel="stylesheet" href="dist/css/styles.css"></noscript>

@@ -73,6 +73,12 @@ section, aside {
   background-color: #ccc;
 }
 
+#static_map {
+  height: 55vh;
+  width: 100%;
+  object-fit: cover;
+}
+
 .filter-options {
   width: 100%;
   display: flex;
@@ -494,7 +500,7 @@ form {
       width: 100%;
     }
   }
-  #map {
+  #map, #static_map {
     height: 70vh;
   }
 }
@@ -577,6 +583,11 @@ form {
   #map {
     height: 100%;
     width: 100%;
+  }
+  #static_map {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
   }
   #footer {
     top: 0;
