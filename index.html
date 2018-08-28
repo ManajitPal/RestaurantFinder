@@ -26,6 +26,7 @@
       <!-- Beginning nav -->
       <nav>
         <h1><a href="/">Restaurant <span>Reviews</span></a></h1>
+        <button aria-label="Map toggle button" id ="mapBtn" onclick="toggleMap()">SHOW MAP</button>
       </nav>
       <!-- End nav -->
     </header>
@@ -34,11 +35,8 @@
     <!-- Beginning main -->
     <main id="maincontent">
       <!-- Beginning map -->
-      <aside id="map-container">
-
-        <img id="static_map" onclick="swap_map()" alt="map"></img> 
-
-        <div id="map" aria-label="map" role="application" style="display: none"></div>
+      <aside id="map-container" style="display: none;">
+        <div id="map" aria-label="map" role="application"></div>
       </aside>
       <!-- End map -->
       <!-- Beginning restaurant listings -->

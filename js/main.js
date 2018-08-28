@@ -5,10 +5,14 @@ var markers = [];
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */
 document.addEventListener('DOMContentLoaded', (event) => {
-	let staticMap = document.getElementById('static_map');
-	staticMap.src = 'http://maps.googleapis.com/maps/api/staticmap?center=40.722216,-73.987501&zoom=13&size=800x800&format=jpg&markers=color:red%7Clabel:S%7Canchor:40.722216,-73.987501&key=AIzaSyC5uBPdVLx3QviAtBgxaRLqWjT0WKwTliU';
 	fetchNeighborhoods();
 	fetchCuisines();
+	if(neighborhoods && cuisines) {
+		updateRestaurants();
+	}
+	else {
+		updateRestaurants();
+	}
 });
 
 /**
@@ -71,6 +75,7 @@ fillCuisinesHTML = (cuisines = self.cuisines) => {
  */
 
 window.initMap = () => {
+	console.log("Maps!");
 	let loc = {
 		lat: 40.722216,
 		lng: -73.987501
@@ -83,7 +88,6 @@ window.initMap = () => {
 	google.maps.event.addDomListener(window, 'resize', function () {
 		map.setCenter(loc);
 	});
-	updateRestaurants();
 };
 
 /**
@@ -105,6 +109,7 @@ updateRestaurants = () => {
 		} else {
 			resetRestaurants(restaurants);
 			fillRestaurantsHTML();
+			addMarkersToMap();
 		}
 	});
 };
@@ -140,7 +145,25 @@ fillRestaurantsHTML = (restaurants = self.restaurants) => {
 	restaurants.forEach(restaurant => {
 		ul.append(createRestaurantHTML(restaurant));
 	});
-	addMarkersToMap();
+
+	let lazyImages = [].slice.call(document.querySelectorAll('img.lazy'));
+	if ('IntersectionObserver' in window && 'IntersectionObserverEntry' in window && 'intersectionRatio' in window.IntersectionObserverEntry.prototype) {
+	  let lazyImageObserver = new IntersectionObserver((entries, observer) => {
+		entries.forEach((entry) => {
+		  if (entry.isIntersecting) {
+			let lazyImage = entry.target;
+			lazyImage.src = lazyImage.dataset.src;
+			lazyImage.classList.remove('lazy');
+
+			lazyImageObserver.unobserve(lazyImage);
+		  }
+		});
+	  });
+  
+	  lazyImages.forEach((lazyImage) => {
+		lazyImageObserver.observe(lazyImage);
+	  });
+	}
 };
 
 /**
@@ -152,13 +175,8 @@ createRestaurantHTML = (restaurant) => {
 	const image = document.createElement('img');
 	image.className = 'restaurant-img lazy';
 	image.alt = `Image for ${restaurant.name}`;
-	if(restaurant.photograph) {
-		image.src = 'data:image/png;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-		image.setAttribute('data-src',`${DBHelper.imageUrlForRestaurant(restaurant)}`);
-	}
-	else {
-		image.src = '/dist/img/undefined.jpg';
-	}
+	image.src = 'data:image/png;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+	image.setAttribute('data-src',`${DBHelper.imageUrlForRestaurant(restaurant)}`);
 	li.append(image);
 
 	const name = document.createElement('h1');
@@ -204,25 +222,6 @@ createRestaurantHTML = (restaurant) => {
 	lastLineContainer.append(more);
 
 	li.append(lastLineContainer);
-	var lazyImages = [].slice.call(document.querySelectorAll('img.lazy'));
-
-	if ("IntersectionObserver" in window && "IntersectionObserverEntry" in window && "intersectionRatio" in window.IntersectionObserverEntry.prototype) {
-	  let lazyImageObserver = new IntersectionObserver(function(entries, observer) {
-		entries.forEach(function(entry) {
-		  if (entry.isIntersecting) {
-			let lazyImage = entry.target;
-			lazyImage.src = lazyImage.dataset.src;
-			// lazyImage.srcset = lazyImage.dataset.srcset;
-			lazyImage.classList.remove('lazy');
-			lazyImageObserver.unobserve(lazyImage);
-		  }
-		});
-	  });
-  
-	  lazyImages.forEach(function(lazyImage) {
-		lazyImageObserver.observe(lazyImage);
-	  });
-	}
 
 	return li;
 };
@@ -241,10 +240,13 @@ addMarkersToMap = (restaurants = self.restaurants) => {
 	});
 };
 
-const swap_map = () => {    
-	if (document.getElementById('map').style.display === 'none')      
-	{        
-	document.getElementById('map').style.display = 'block' ;       document.getElementById('static_map').style.display = 'none'  ;    
+const toggleMap = () => {    
+	if (document.getElementById('map-container').style.display === 'none') {        document.getElementById('mapBtn').innerHTML = 'HIDE MAP';
+		document.getElementById('map-container').style.display = 'block';
+	}
+	else {
+		document.getElementById('mapBtn').innerHTML = 'SHOW MAP';
+		document.getElementById('map-container').style.display = 'none';
 	}    
 }
 

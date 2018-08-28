@@ -263,3 +263,14 @@ function closeAlert(){
     alertBox.style.display = "none";
 }
 
+const toggleMap = () => {    
+	if (document.getElementById('map-container').style.display === 'none') {        document.getElementById('mapBtn').innerHTML = 'HIDE MAP';
+		document.getElementById('map-container').style.display = 'block';
+		document.getElementById('restaurant-container').classList.remove('noMap');    
+	}
+	else {
+		document.getElementById('mapBtn').innerHTML = 'SHOW MAP';
+		document.getElementById('map-container').style.display = 'none';
+		document.getElementById('restaurant-container').classList.add('noMap');
+	}    
+}
