@@ -5,6 +5,9 @@ var markers = [];
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */
 document.addEventListener('DOMContentLoaded', (event) => {
+	DBHelper.openIndexDB();
+	window.addEventListener('online', checkOfflineData);
+    window.addEventListener('offline', offlineStatus);
 	fetchNeighborhoods();
 	fetchCuisines();
 	if(neighborhoods && cuisines) {
@@ -88,6 +91,7 @@ window.initMap = () => {
 	google.maps.event.addDomListener(window, 'resize', function () {
 		map.setCenter(loc);
 	});
+	addMarkersToMap();
 };
 
 /**
@@ -209,9 +213,8 @@ createRestaurantHTML = (restaurant) => {
 	}
 	favoriteButton.onclick = () => {
 		restaurant.is_favorite = !restaurant.is_favorite;
-		DBHelper.toggleFavorite(restaurant.id, restaurant.is_favorite, (data) => {
-			DBHelper.updateFavorite(favoriteButton, restaurant);
-		});
+		DBHelper.toggleFavorite(restaurant);
+		DBHelper.updateFavorite(favoriteButton, restaurant);
 	}
 	lastLineContainer.append(favoriteButton);
 
@@ -250,5 +253,61 @@ const toggleMap = () => {
 	}    
 }
 
+const checkOfflineData = () => {
+	checkOfflineReviews();
+	checkOfflineFavorites();
+	location.reload();
+}
+
+const checkOfflineReviews = () => {
+	DBHelper.getOfflinePosts((reviews) => {
+		if(!reviews) console.log("No offline reviews to post");
+		else {
+			reviews.forEach(review => {
+				DBHelper.postReview(review, (response) => {
+					console.log('Offline review sent to server!')
+				});
+			})
+		DBHelper.deleteOfflinePosts();
+		}
+	})
+}
+
+const checkOfflineFavorites = () => {
+	DBHelper.getOfflineFavorites((favorites) => {
+		if(!favorites) console.log("No offline reviews to post");
+		else {
+			favorites.forEach(favorite => {
+				DBHelper.toggleFavorite(favorite);
+			})
+		}
+	})
+	DBHelper.deleteOfflineFavorites();
+}
+
+const offlineStatus = () => {
+	if(navigator.onLine === false)
+		showAlert('Internet connection is lost');
+}
+
+/*
+ * show alert message
+ */
+const showAlert = (msg) => {
+    const alertBox = document.getElementById('alert');
+    alertBox.getElementsByClassName('msg')[0].innerText = msg;
+    alertBox.style.display = "inline-block";
+    setTimeout(() => { closeAlert(); }, 5000);
+}
+
+
+/*
+ * close alert message; 
+ */
+const closeAlert = () => {
+    const alertBox = document.getElementById('alert');
+    alertBox.getElementsByClassName('msg')[0].innerText = "";
+    alertBox.style.display = "none";
+}
 
 

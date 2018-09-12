@@ -1,6 +1,12 @@
 var restaurant;
 var newMap;
 
+
+document.addEventListener('DOMContentLoaded', (event) => {
+	DBHelper.openIndexDB();
+	window.addEventListener('online', checkOfflineData);
+    window.addEventListener('offline', offlineStatus);
+});
 /**
  * Initialize map as soon as the page is loaded.
  */
@@ -72,9 +78,8 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
 	}
 	favoriteButton.onclick = () => {
 		restaurant.is_favorite = !restaurant.is_favorite;
-		DBHelper.toggleFavorite(restaurant.id, restaurant.is_favorite, (data) => {
-			DBHelper.updateFavorite(favoriteButton, restaurant);
-		});
+		DBHelper.toggleFavorite(restaurant);
+		DBHelper.updateFavorite(favoriteButton, restaurant);
 	}
 
 	const address = document.getElementById('restaurant-address');
@@ -96,6 +101,43 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
 	fillReviewsHTML();
 };
 
+const checkOfflineData = () => {
+	checkOfflineReviews();
+
+	checkOfflineFavorites();
+}
+
+const checkOfflineReviews = () => {
+	DBHelper.getOfflinePosts((reviews) => {
+		if(!reviews) console.log("No offline reviews to post");
+		else {
+			reviews.forEach(review => {
+				const reviewData = {
+					'restaurant_id': review.restaurant_id,
+					'name': review.name,
+					'rating': review.rating,
+					'comments': review.comments
+				}
+				DBHelper.postReview(reviewData);
+				console.log('Offline review sent to server!');
+			});
+		}
+	})
+	DBHelper.deleteOfflinePosts();
+	location.reload();
+}
+
+const checkOfflineFavorites = () => {
+	DBHelper.getOfflineFavorites((favorites) => {
+		if(!favorites) console.log("No offline reviews to post");
+		else {
+			favorites.forEach(favorite => {
+				DBHelper.toggleFavorite(favorite);
+			})
+		DBHelper.deleteOfflineFavorites();
+		}
+	})
+}
 /**
  * Create restaurant operating hours HTML table and add it to the webpage.
  */
@@ -198,7 +240,9 @@ sendForm = () => {
 	event.preventDefault();
 	const review = validateForm();
 	if(review) {
-		sendReview(review);
+		DBHelper.postReview(review);
+		location.reload();
+		showAlert('Review Added Successfully!');
 	}
 }
 
@@ -236,17 +280,15 @@ validateForm = () => {
 
 }
 
-sendReview = (review) => {
-	DBHelper.postReview(review, (response) => {
-		location.reload();
-		showAlert('Review Added Successfully!');
-	});
+const offlineStatus = () => {
+	if(navigator.onLine === false)
+		showAlert('Internet connection is lost');
 }
 
 /*
  * show alert message
  */
-function showAlert(msg){
+const showAlert = (msg) => {
     const alertBox = document.getElementById('alert');
     alertBox.getElementsByClassName('msg')[0].innerText = msg;
     alertBox.style.display = "inline-block";
@@ -257,7 +299,7 @@ function showAlert(msg){
 /*
  * close alert message; 
  */
-function closeAlert(){
+const closeAlert = () => {
     const alertBox = document.getElementById('alert');
     alertBox.getElementsByClassName('msg')[0].innerText = "";
     alertBox.style.display = "none";

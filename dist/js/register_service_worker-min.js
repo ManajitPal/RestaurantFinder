@@ -1,0 +1,1 @@
+window.registerServiceWorker=(()=>{navigator.serviceWorker&&navigator.serviceWorker.register("/sw.js").then(e=>{navigator.serviceWorker.controller&&console.log("SW registered")})}),document.addEventListener("DOMContentLoaded",e=>{registerServiceWorker()});

@@ -1,3 +1,10 @@
+const RESTAURANT_DB = 'restaurant_finder';
+const RESTAURANT_OS = 'restaurants';
+const REVIEW_OS = 'reviews';
+const OFFLINE_REVIEW_OS = 'offline_reviews';
+const OFFLINE_FAVORITE_OS = 'offline_favorite';
+let dbPromise;
+
 /**
  * Common database helper functions.
  */
@@ -12,27 +19,72 @@ class DBHelper {
 		return `http://localhost:${port}`;
 	}
 
+  static openIndexDB() {
+    if (!('indexedDB' in window)) {
+      console.log('This browser doesn\'t support IndexedDB');
+      return;
+    }
+      dbPromise = idb.open(RESTAURANT_DB, 1, (upgradeDb) => {
+      console.log('making a new object store');
+      if (!upgradeDb.objectStoreNames.contains(RESTAURANT_OS)) {
+        upgradeDb.createObjectStore(RESTAURANT_OS, {
+          keyPath: 'id'
+        });
+      }
+      if (!upgradeDb.objectStoreNames.contains(REVIEW_OS)) {
+        upgradeDb.createObjectStore(REVIEW_OS, {
+          keyPath: 'id'
+        });
+      }
+      if (!upgradeDb.objectStoreNames.contains(OFFLINE_REVIEW_OS)) {
+        upgradeDb.createObjectStore(OFFLINE_REVIEW_OS, {
+          keyPath: 'id',
+          autoIncrement: true
+        });
+      }
+      if (!upgradeDb.objectStoreNames.contains(OFFLINE_FAVORITE_OS)) {
+        upgradeDb.createObjectStore(OFFLINE_FAVORITE_OS, {
+          keyPath: 'id'
+        });
+      }
+    });
+  }
+
+  static storeInIndexDB(oSName, data) {
+    dbPromise.then((db) => {
+      if(!db) return;
+      let tx = db.transaction(oSName, 'readwrite');
+      let store = tx.objectStore(oSName);
+      data.forEach((item) => {
+        store.put(item);
+      })
+      return tx.complete;
+    }).then(() => {
+      console.log('Data Added to IDB');
+    });
+  }
+  
 	/**
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    // let xhr = new XMLHttpRequest();
-    // xhr.open('GET', `${DBHelper.DATABASE_URL}/restaurants`);
-    // xhr.onload = () => {
-    //   if (xhr.status === 200) { // Got a success response from server!
-    //     const json = JSON.parse(xhr.responseText);
-    //     const restaurants = json;
-    //     callback(null, restaurants);
-    //   } else { // Oops!. Got an error from server.
-    //     const error = (`Request failed. Returned status of ${xhr.status}`);
-    //     callback(error, null);
-    //   }
-    // };
-    // xhr.send();
-    return fetch(`${this.DATABASE_URL}/restaurants`, {method: 'GET'}).then(response => response.json()).then(data => {
-      console.log(data);
-      callback(null, data);
-    });
+
+    if(navigator.onLine === false) {
+      dbPromise.then((db) => {
+        if(!db) return;
+        let restaurantIndex = db.transaction(RESTAURANT_OS).objectStore(RESTAURANT_OS);
+        return restaurantIndex.getAll().then((restaurants) => {
+          callback(null, restaurants);
+        })
+      })
+    }
+
+    else {
+      return fetch(`${this.DATABASE_URL}/restaurants`, {method: 'GET'}).then(response => response.json()).then(data => {
+        DBHelper.storeInIndexDB(RESTAURANT_OS, data);
+        callback(null, data);
+      });
+    }
   }
 
   /**
@@ -143,16 +195,148 @@ class DBHelper {
     });
   }
 
+  static fetchReviews(id, callback) {
+
+    if(navigator.onLine === false) {
+      dbPromise.then((db) => {
+        if(!db) return;
+        let reviewIndex = db.transaction(REVIEW_OS).objectStore(REVIEW_OS);
+        return reviewIndex.getAll().then((reviews) => {
+          DBHelper.getOfflinePosts((offlineReviews) => {
+            if(offlineReviews) {
+              callback(reviews.concat(offlineReviews));
+            }
+            else {
+              callback(reviews);
+            }
+          })      
+        })
+      })
+    }
+    else {
+      return fetch(`${this.DATABASE_URL}/reviews/?restaurant_id=${id}`, {method: 'GET'}).then(response => response.json()).then(data => {
+        DBHelper.storeInIndexDB(REVIEW_OS, data);
+        callback(data);
+      });
+    }
+  }
+
   static fetchReviewByRestaurantId(id, callback) {
-    return fetch(`${this.DATABASE_URL}/reviews/?restaurant_id=${id}`, {method: 'GET'}).then(response => response.json()).then(data => {callback(data)});
+    DBHelper.fetchReviews(id, (reviews) => {
+      const finalReviews = reviews.filter(r => r.restaurant_id == id)
+      callback(finalReviews);
+    })
   }
 
-  static postReview(review, callback) {
-    return fetch(`${this.DATABASE_URL}/reviews/`, {method: 'POST', body: JSON.stringify(review)}).then(response=> response.json()).then(data => {callback(data)});
+  static storeOfflinePosts(review) {
+    dbPromise.then((db) => {
+      if(!db) return;
+      let tx = db.transaction(OFFLINE_REVIEW_OS, 'readwrite');
+      let store = tx.objectStore(OFFLINE_REVIEW_OS);
+      store.add(review);
+      return tx.complete;
+    }).then(() => {
+      console.log('Offline Review Added');
+    });
   }
 
-  static toggleFavorite(id, favorite, callback) {
-    return fetch(`${this.DATABASE_URL}/restaurants/${id}/?is_favorite=${favorite}`, {method: 'PUT'}).then(response => response.json()).then(data => {callback(data)});
+  static getOfflinePosts(callback) {
+    dbPromise.then((db) => {
+      if(!db) return;
+      let reviewIndex = db.transaction(OFFLINE_REVIEW_OS).objectStore(OFFLINE_REVIEW_OS);
+      return reviewIndex.getAll().then((reviews) => {
+        callback(reviews)
+      })
+    })
+  }
+
+  static deleteOfflinePosts() {
+    if(navigator.onLine){
+      dbPromise.then((db) => {
+        if(!db) return;
+        let tx = db.transaction(OFFLINE_REVIEW_OS, 'readwrite');
+        let store = tx.objectStore(OFFLINE_REVIEW_OS);
+        store.clear();
+        return tx.complete;
+      }).then(() => {
+        console.log('Offline Reviews deleted');
+      });
+    }
+  }
+
+
+  static postReview(review) {
+    
+    if(navigator.onLine === false){
+      DBHelper.storeOfflinePosts(review);
+    }
+    else {
+      return fetch(`${this.DATABASE_URL}/reviews/`, {method: 'POST', body: JSON.stringify(review)}).then(response => response.json()).then(data => {
+        DBHelper.storeInIndexDB(REVIEW_OS, data);
+      });
+    }
+  }
+
+  static storeOfflineFavorites(id, favorite) {
+    dbPromise.then((db) => {
+      if(!db) return;
+      let tx = db.transaction(OFFLINE_FAVORITE_OS, 'readwrite');
+      let store = tx.objectStore(OFFLINE_FAVORITE_OS);
+      let favoriteData = {
+        id: id,
+        is_favorite: favorite
+      };
+      store.put(favoriteData);
+      return tx.complete;
+    }).then(() => {
+      console.log('Offline Favorite Added');
+    });
+  }
+
+  static getOfflineFavorites(callback) {
+    dbPromise.then((db) => {
+      if(!db) return;
+      let favoriteIndex = db.transaction(OFFLINE_FAVORITE_OS).objectStore(OFFLINE_FAVORITE_OS);
+      return favoriteIndex.getAll().then((favorites) => {
+        callback(favorites)
+      })
+    })
+  }
+
+  static deleteOfflineFavorites() {
+    if(navigator.onLine) {
+      dbPromise.then((db) => {
+        if(!db) return;
+        let tx = db.transaction(OFFLINE_FAVORITE_OS, 'readwrite');
+        let store = tx.objectStore(OFFLINE_FAVORITE_OS);
+        store.clear();
+        return tx.complete;
+      }).then(() => {
+        console.log('Offline Favorites deleted');
+      });
+    }
+  }
+
+  static toggleFavorite(restaurant) {
+
+    if(navigator.onLine === false){
+      DBHelper.storeOfflineFavorites(restaurant.id, restaurant.is_favorite);
+      dbPromise.then((db) => {
+        if(!db) return;
+        let tx = db.transaction(RESTAURANT_OS, 'readwrite');
+        let store = tx.objectStore(RESTAURANT_OS);
+        store.put(restaurant);
+        return tx.complete;
+      }).then(() => {
+        console.log('Favorite updated in IDB');
+      });
+    }
+
+    else {
+      return fetch(`${this.DATABASE_URL}/restaurants/${restaurant.id}/?is_favorite=${restaurant.is_favorite}`, {method: 'PUT'}).then(response => response.json().then(data => {
+        DBHelper.storeInIndexDB(RESTAURANT_OS, data);
+      }));
+    }
   }
 
   static updateFavorite(button, restaurant) {
@@ -193,7 +377,7 @@ static mapMarkerForRestaurant(restaurant, map) {
       position: restaurant.latlng,
       url: DBHelper.urlForRestaurant(restaurant),
       map: map,
-      icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png',
+      icon: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
       title: restaurant.name,
       animation: google.maps.Animation.DROP}
     );
