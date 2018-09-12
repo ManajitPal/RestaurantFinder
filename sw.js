@@ -11,7 +11,7 @@ const ALL_CACHES = [
  */
 self.addEventListener('install', (event) => {
     event.waitUntil(
-      caches.open(STATIC_CACHE_NAME).then(function (cache) {
+      caches.open(STATIC_CACHE_NAME).then((cache) => {
           return cache.addAll([
             '/',
             '/index.html',
@@ -80,7 +80,7 @@ self.addEventListener('fetch', (event) => {
  * Get the requested images from the cache if exist,
  * otherwise fetch them from the network then cache them  
  */
-function serveImage(request) {
+serveImage = (request) => {
     var storageUrl = request.url.replace(/-\d+px\.(jpg|webp)$/, '');
     
     return caches.open(CONTENT_IMAGES_CACHE).then((cache) => {

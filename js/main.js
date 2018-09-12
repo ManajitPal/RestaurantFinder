@@ -88,7 +88,7 @@ window.initMap = () => {
 		center: loc,
 		scrollwheel: false
 	});
-	google.maps.event.addDomListener(window, 'resize', function () {
+	google.maps.event.addDomListener(window, 'resize', () => {
 		map.setCenter(loc);
 	});
 	addMarkersToMap();
